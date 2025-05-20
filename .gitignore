@@ -1,0 +1,50 @@
+# Archivos de entorno
+.env
+.env.local
+.env.*.local
+
+# Entornos virtuales de Python
+.venv/
+venv/
+ENV/
+
+# Dependencias
+/node_modules
+/.pnp
+.pnp.js
+
+# Archivos de construcción
+/build
+/dist
+/.next/
+/out/
+
+# Archivos de caché
+.cache/
+.npm
+.eslintcache
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE y editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.bak
+
+# Archivos de logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Archivos de cobertura de pruebas
+/coverage
+
+# Archivos temporales
+*.tmp
+*.temp 

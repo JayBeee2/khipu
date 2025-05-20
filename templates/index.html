@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda con Khipu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://js.khipu.com/v1/kws.js"></script>
+    <style>
+        body { padding-top: 20px; }
+        .card { margin-bottom: 20px; }
+        .btn-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Tienda Khipu</h1>
+        
+        <div class="btn-container">
+            <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modalPago">
+                Realizar un Pago
+            </button>
+
+        </div>
+
+        <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalPagoLabel">Realizar un Pago</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formularioPago" class="mt-4">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email del pagador</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Monto</label>
+                                <input type="number" class="form-control" id="amount" name="amount" min="1" step="0.01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="moneda" class="form-label">Moneda</label>
+                                <select class="form-control" id="moneda" name="moneda">
+                                    <option value="CLP" selected>Peso Chileno (CLP)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">Motivo/Asunto</label>
+                                <input type="text" class="form-control" id="subject" name="subject" value="test" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Descripción</label>
+                                <input type="text" class="form-control" id="description" name="description">
+                            </div>
+                            <div class="mb-3">
+                                <input type="hidden" class="form-control" id="transaction_id" name="transaction_id">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Pagar con Khipu</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        
+        <div id="khipu-web-root"></div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('formularioPago').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const transactionInput = document.getElementById('transaction_id');
+            if (!transactionInput.value) {
+                transactionInput.value = 'txn_' + Date.now();
+            }
+
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            fetch('/payment/generar-cobro', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+
+                    const modalPago = bootstrap.Modal.getInstance(document.getElementById('modalPago'));
+                    modalPago.hide();
+
+                    const options = {
+                        mountElement: document.getElementById('khipu-web-root'),
+                        modal: true,
+                        modalOptions: {
+                            maxWidth: 450,
+                            maxHeight: 860,
+                        },
+                        options: {
+                            style: {
+                                primaryColor: '#8347AD',
+                                fontFamily: 'Roboto',
+                            },
+                            skipExitPage: false,
+                        }
+                    };
+
+                    const khipu = new Khipu();
+                    
+                    const callback = (result) => {
+                        console.log('Resultado del pago:', result);
+                        if (result.result === 'OK') {
+                            alert('¡Pago exitoso!');
+                        } else if (result.result === 'ERROR') {
+                            alert('Error en el pago: ' + result.exitMessage);
+                            // Mostrar el modal de pago si hay error
+                            modalPago.show();
+                        } else if (result.result === 'WARNING') {
+                            alert('Advertencia: ' + result.exitMessage);
+                            // Mostrar el modal de pago si hay advertencia
+                            modalPago.show();
+                        } else if (result.result === 'CONTINUE') {
+                            window.location.href = result.continueUrl;
+                        }
+                    };
+
+                    khipu.startOperation(data.payment_id, callback, options);
+                } else {
+                    alert('Error al crear el pago: ' + (data.message || data.error));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ocurrió un error al procesar el pago');
+            });
+        });
+
+
+    </script>
+</body>
+</html> 
