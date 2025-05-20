@@ -11,7 +11,6 @@ app.register_blueprint(payment_blueprint, url_prefix='/payment')
 API_KEY = os.environ.get('KHIPU_API_KEY')
 if not API_KEY:
     raise ValueError("La variable de entorno KHIPU_API_KEY no esta aplicada.")
-# NOTIFY_URL = os.environ.get('KHIPU_NOTIFY_URL', 'https://tu-dominio.com/payment/notification')
 BASE_URL = 'https://api.khipu.com/payments'
 
 

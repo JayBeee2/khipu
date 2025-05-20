@@ -5,7 +5,6 @@ import json
 from datetime import datetime,timedelta
 from dotenv import load_dotenv
 
-# Cargar variables de entorno
 load_dotenv()
 
 # Crear el blueprint
@@ -38,7 +37,6 @@ class Pagos:
             transaction_id = data.get('transaction_id')
             payer_email = data.get('email')
             description = data.get('description')
-            # Puedes agregar más campos opcionales aquí si los necesitas
 
             if not monto or not payer_email or not motivo:
                 return jsonify({'error': 'Faltan datos requeridos'}), 400
@@ -99,7 +97,6 @@ class Pagos:
             if api_version != '1.3':
                 return jsonify({'error': 'Versión de API no soportada'}), 400
 
-            # Verificar el pago con Khipu
             headers = {
                 'Authorization': f'Bearer {self.API_KEY}',
                 'Content-Type': 'application/json'
@@ -113,7 +110,6 @@ class Pagos:
             if response.status_code == 200:
                 payment_data = response.json()
                 
-                # Verificar que el pago sea válido
                 if (payment_data.get('receiver_id') == self.RECEIVER_ID and 
                     payment_data.get('status') == 'done'):
                     return jsonify({'status': 'success'}), 200
@@ -133,10 +129,8 @@ class Pagos:
         return render_template('payment/retorno.html')
 
     def cancelacionPago(self):
-        # Página de cancelación del pago
         return render_template('payment/cancelacion.html')
 
-# Crear una instancia de la clase Pagos
 pagos = Pagos()
 
 
